@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+<title>Hint Checklist</title>
+<style>
+  body { font-family: "Prompt", sans-serif; padding: 20px; background: #f5f5f5; }
+  h1 { text-align: center; }
+  #hint-list { list-style: none; padding: 0; }
+  li { background: #fff; margin-bottom: 8px; padding: 8px 12px; border-radius: 5px; display: flex; align-items: center; transition: background 0.3s; font-size: 30px;}
+  input[type="checkbox"] { margin-right: 10px; }
+  li.checked { background: #c8f7c5; } /* Green background when checked */
+  #newHint { padding: 5px; width: 70%; }
+  button { padding: 5px 10px; margin-left: 10px; }
+</style>
+</head>
+<body>
+
+<h1>Hint Checklist</h1>
+
+<input type="file" id="fileInput" accept=".txt"><br><br>
+<ul id="hint-list"></ul>
+
+<input type="text" id="newHint" placeholder="Add new hint...">
+<button onclick="addHint()">Add Hint</button>
+<button onclick="downloadHints()">Download Updated File</button>
+
+<script>
+let hints = [];
+
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const text = event.target.result;
+    hints = text.split('\n').map(line => line.trim()).filter(line => line);
+    renderHints();
+  };
+  reader.readAsText(file);
+});
+
+function renderHints() {
+  const list = document.getElementById('hint-list');
+  list.innerHTML = '';
+  hints.forEach(hint => {
+    const li = document.createElement('li');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+
+    // Toggle background when checkbox is clicked
+    checkbox.addEventListener('change', () => {
+      li.classList.toggle('checked', checkbox.checked);
+    });
+
+    li.appendChild(checkbox);
+    li.appendChild(document.createTextNode(hint));
+    list.appendChild(li);
+  });
+}
+
+function addHint() {
+  const newHint = document.getElementById('newHint').value.trim();
+  if (!newHint) return alert('Please enter a hint.');
+  if (hints.includes(newHint)) return alert('This hint already exists.');
+
+  hints.push(newHint);
+  renderHints();
+  document.getElementById('newHint').value = '';
+}
+
+function downloadHints() {
+  const content = hints.join('\n');
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'hints.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+
+</body>
+</html>
